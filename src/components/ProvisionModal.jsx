@@ -7,7 +7,7 @@ export default function ProvisionModal({ isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [deviceId, setDeviceId] = useState(null);
-  
+
   // Form Data
   const [name, setName] = useState('');
   const [deviceType, setDeviceType] = useState('ESP32');
@@ -37,30 +37,30 @@ export default function ProvisionModal({ isOpen, onClose, onSuccess }) {
     const toastId = toast.loading('Compiling firmware factory...');
 
     try {
-      const response = await api.post(`fleet/devices/${deviceId}/generate-firmware/`, 
-
-        { 
-
-          ssid: ssid, 
-          password: password, 
-          server_ip: serverIp 
+      const serverIp = import.meta.env.VITE_SERVER_HOST || 'macro-backend-wydi.onrender.com';
+      const response = await api.post(
+        `fleet/devices/${deviceId}/generate-firmware/`,
+        {
+          ssid: ssid,
+          password: password,
+          server_ip: serverIp,
         },
-
         { responseType: 'blob' }
-);
+      );
 
       // Force browser to download the blob
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `nexus_firmware_${deviceId.substring(0,8)}.ino`);
+      link.setAttribute('download', `nexus_firmware_${deviceId.substring(0, 8)}.ino`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
+      window.URL.revokeObjectURL(url);
+
       toast.success('Firmware downloaded!', { id: toastId });
-      onSuccess(); // Refresh the fleet grid
-      onClose();   // Close modal
+      if (onSuccess) onSuccess(); // Refresh the fleet grid
+      onClose(); // Close modal
     } catch (error) {
       toast.error('Firmware compilation failed.', { id: toastId });
     } finally {
@@ -83,16 +83,31 @@ export default function ProvisionModal({ isOpen, onClose, onSuccess }) {
             <form onSubmit={handleCreateDevice} className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Device Name</label>
-                <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. Living Room Node" />
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. Living Room Node"
+                />
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Hardware Type</label>
-                <select value={deviceType} onChange={e => setDeviceType(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                <select
+                  value={deviceType}
+                  onChange={(e) => setDeviceType(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                >
                   <option value="ESP32">ESP32 (Wi-Fi)</option>
                   <option value="RPI">Raspberry Pi (Linux)</option>
                 </select>
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-white text-slate-950 font-medium py-2 rounded-lg hover:bg-slate-200 transition-colors mt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-white text-slate-950 font-medium py-2 rounded-lg hover:bg-slate-200 transition-colors mt-4"
+              >
                 {loading ? <Loader2 className="animate-spin mx-auto" size={20} /> : 'Register Device'}
               </button>
             </form>
@@ -103,14 +118,36 @@ export default function ProvisionModal({ isOpen, onClose, onSuccess }) {
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Wi-Fi SSID (Network Name)</label>
-                <input type="text" required value={ssid} onChange={e => setSsid(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                <input
+                  type="text"
+                  required
+                  value={ssid}
+                  onChange={(e) => setSsid(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                />
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1">Wi-Fi Password</label>
-                <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                />
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition-colors mt-4 flex items-center justify-center gap-2">
-                {loading ? <Loader2 className="animate-spin" size={20} /> : <><Download size={18} /> Download Firmware</>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition-colors mt-4 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  <>
+                    <Download size={18} /> Download Firmware
+                  </>
+                )}
               </button>
             </form>
           )}

@@ -30,7 +30,7 @@ export default function HardwareCanvas() {
   const [networkCreds, setNetworkCreds] = useState({
     wifi_ssid: "",
     wifi_password: "",
-    server_ip: "192.168.1.100" // A sensible default
+    server_ip: "macro-backend-wydi.onrender.com" // A sensible default
   });
 
   useEffect(() => {

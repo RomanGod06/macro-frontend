@@ -33,8 +33,13 @@ export default function DeviceCard({ device, onRefresh, onDesignCanvas, onAutoma
     // 2. Setup WebSocket for instant commands
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // If we're using the Render backend, we connect via WSS
-    const host = window.location.hostname === 'localhost' ? 'localhost:8000' : 'macro-iot.onrender.com';
-    const wsUrl = `${host === 'localhost:8000' ? 'ws:' : 'wss:'}//${host}/ws/hardware/${device.id}/`;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const wsBase = import.meta.env.VITE_WS_URL;
+    const wsUrl = wsBase
+    ? `${wsBase.replace(/\/$/, '')}/ws/hardware/${device.id}/`
+    : isLocal
+    ? `ws://localhost:8000/ws/hardware/${device.id}/`
+    : `wss://macro-backend-wydi.onrender.com/ws/hardware/${device.id}/`;
     
     wsRef.current = new WebSocket(wsUrl);
 
